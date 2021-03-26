@@ -1,7 +1,7 @@
 import java.util.Arrays;
 import java.util.List;
 
-public class Bowling {
+public class BowlingScoreProvider {
 
     public static final String INVALID_FRAME_EXPRESSION = "invalid frame expression frame:";
     public static final String INVALID_FRAME_SIZE = "invalid frame size";
@@ -25,18 +25,21 @@ public class Bowling {
     }
 
     private void frameValidationAndCalculateScore(String frame, Integer[] result) {
+        FrameType frameType = FrameType.getFrameType(frame);
+        
+
         int frameScore;
-        if (frame.matches(FrameValidations.STRIKE_REGEX.getRegex())) {
+        if (frame.matches(FrameType.STRIKE_REGEX.getValidRegex())) {
             frameScore = getScoreForAllBallsKnockedDown();
-        } else if (frame.matches(FrameValidations.SPARE_REGEX.getRegex())) {
+        } else if (frame.matches(FrameType.SPARE_REGEX.getValidRegex())) {
             frameScore = getScoreForAllBallsKnockedDown();
-        } else if (frame.matches(FrameValidations.TWO_DIGIT_REGEX.getRegex())) {
+        } else if (frame.matches(FrameType.TWO_DIGIT_REGEX.getValidRegex())) {
             frameScore = scoreForTwoDigitNumber(frame);
-        } else if (frame.matches(FrameValidations.TWO_MISS_REGEX.getRegex())) {
+        } else if (frame.matches(FrameType.TWO_MISS_REGEX.getValidRegex())) {
             frameScore = scoreForTwoMissesInAFrame();
-        } else if (frame.matches(FrameValidations.DIGIT_AND_MISS_REGEX.getRegex())) {
+        } else if (frame.matches(FrameType.DIGIT_AND_MISS_REGEX.getValidRegex())) {
            frameScore =  scoreForADigitAndAMiss(frame);
-        } else if (frame.matches(FrameValidations.MISS_AND_DIGIT_REGEX.getRegex())) {
+        } else if (frame.matches(FrameType.MISS_AND_DIGIT_REGEX.getValidRegex())) {
             frameScore = scoreForAMissAndADigit(frame);
         } else {
             throw new IllegalArgumentException(INVALID_FRAME_EXPRESSION + frame);

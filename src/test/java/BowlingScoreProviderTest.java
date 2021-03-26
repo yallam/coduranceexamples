@@ -4,15 +4,15 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class BowlingTest {
-    Bowling bowling = new Bowling();
+public class BowlingScoreProviderTest {
+    BowlingScoreProvider bowlingScoreProvider = new BowlingScoreProvider();
 
     @ParameterizedTest
     @ValueSource(strings = {"w", "ere2"})
     public void shouldThrowValidationErrorWhenBonusSeparatorIsNotGiven(String expression) {
         AssertionError thrown = assertThrows(
                 AssertionError.class,
-                () -> bowling.getScore(expression),
+                () -> bowlingScoreProvider.getScore(expression),
                 "Expected getScore() to throw, but it didn't"
         );
         assertTrue(thrown.getMessage().contains("invalid bonus expression"));
@@ -23,7 +23,7 @@ public class BowlingTest {
     public void shouldThrowValidationErrorWhenMoreThanOneBonusSeparatorIsGiven(String expression) {
         AssertionError thrown = assertThrows(
                 AssertionError.class,
-                () -> bowling.getScore(expression),
+                () -> bowlingScoreProvider.getScore(expression),
                 "Expected getScore() to throw, but it didn't"
         );
         assertTrue(thrown.getMessage().contains("invalid bonus expression"));
@@ -34,7 +34,7 @@ public class BowlingTest {
             "String split by pipeline and length 10, 23|22|32|23|23|23|23|23|23|21|| ,47"
     })
     public void shouldHave10FramesInGivenString(String senario, String expression, int expected) {
-        assertEquals(expected, bowling.getScore(expression));
+        assertEquals(expected, bowlingScoreProvider.getScore(expression));
     }
 
     @ParameterizedTest
@@ -46,7 +46,7 @@ public class BowlingTest {
     public void shouldThrowValidationErrorWhenFramesAreNot10(String senario, String expression, String expected) {
         AssertionError thrown = assertThrows(
                 AssertionError.class,
-                () -> bowling.getScore(expression),
+                () -> bowlingScoreProvider.getScore(expression),
                 "Expected getScore() to throw, but it didn't"
         );
 
@@ -63,7 +63,7 @@ public class BowlingTest {
             "string with miss and digit, -1|-1|-1|-1|-2|-3|-4|-1|-1|-2||,17"
     })
     public void shouldGiveScoreWhenAddingAllTheFrames(String senario, String expression, int expected) {
-        assertEquals(expected, bowling.getScore(expression));
+        assertEquals(expected, bowlingScoreProvider.getScore(expression));
     }
 
     @ParameterizedTest
@@ -75,7 +75,7 @@ public class BowlingTest {
     public void shouldThrowValidationErrorWhenFrameFormatIsNotCorrect(String senario, String expression, String expected) {
         IllegalArgumentException thrown = assertThrows(
                 IllegalArgumentException.class,
-                () -> bowling.getScore(expression),
+                () -> bowlingScoreProvider.getScore(expression),
                 "Expected getScore() to throw, but it didn't"
         );
         assertEquals(expected, thrown.getMessage());
@@ -89,7 +89,7 @@ public class BowlingTest {
     public void shouldThrowValidationErrorWhenSumOfDigitsInFrameAreGreaterThan10(String senario, String expression, String expected) {
         AssertionError thrown = assertThrows(
                 AssertionError.class,
-                () -> bowling.getScore(expression),
+                () -> bowlingScoreProvider.getScore(expression),
                 "Expected getScore() to throw, but it didn't"
         );
         assertEquals(expected, thrown.getMessage());
