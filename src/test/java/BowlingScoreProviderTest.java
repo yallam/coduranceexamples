@@ -6,16 +6,18 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class BowlingScoreProviderTest {
     BowlingScoreProvider bowlingScoreProvider = new BowlingScoreProvider();
+    ExpressionAndFrameValidation expressionAndFrameValidation = new ExpressionAndFrameValidation();
 
     @ParameterizedTest
     @ValueSource(strings = {"w", "ere2"})
     public void shouldThrowValidationErrorWhenBonusSeparatorIsNotGiven(String expression) {
         AssertionError thrown = assertThrows(
                 AssertionError.class,
-                () -> bowlingScoreProvider.getScore(expression),
+                () -> expressionAndFrameValidation.getExpressionValidation(expression),
                 "Expected getScore() to throw, but it didn't"
         );
-        assertTrue(thrown.getMessage().contains("invalid bonus expression"));
+        assertTrue(thrown.getMessage().contains("invalid bonus size"));
+
     }
 
     @ParameterizedTest
@@ -23,19 +25,11 @@ public class BowlingScoreProviderTest {
     public void shouldThrowValidationErrorWhenMoreThanOneBonusSeparatorIsGiven(String expression) {
         AssertionError thrown = assertThrows(
                 AssertionError.class,
-                () -> bowlingScoreProvider.getScore(expression),
+                () -> expressionAndFrameValidation.getExpressionValidation(expression),
                 "Expected getScore() to throw, but it didn't"
         );
-        assertTrue(thrown.getMessage().contains("invalid bonus expression"));
+        assertTrue(thrown.getMessage().contains("invalid bonus size"));
     }
-
-//    @ParameterizedTest
-//    @CsvSource({
-//            "String split by pipeline and length 10, 23|22|32|23|23|23|23|23|23|21|| ,47"
-//    })
-//    public void shouldHave10FramesInGivenString(String senario, String expression, int expected) {
-//        assertEquals(expected, bowlingScoreProvider.getScore(expression));
-//    }
 
     @ParameterizedTest
 
@@ -46,25 +40,12 @@ public class BowlingScoreProviderTest {
     public void shouldThrowValidationErrorWhenFramesAreNot10(String senario, String expression, String expected) {
         AssertionError thrown = assertThrows(
                 AssertionError.class,
-                () -> bowlingScoreProvider.getScore(expression),
+                () -> expressionAndFrameValidation.getExpressionValidation(expression),
                 "Expected getScore() to throw, but it didn't"
         );
 
         assertEquals(expected, thrown.getMessage());
     }
-
-//    @ParameterizedTest
-//    @CsvSource({
-//            "String with frames as X, X|X|X|X|X|X|X|X|X|X|| ,100",
-//            "string with spare in a frame,1/|2/|3/|4/|5/|6/|7/|8/|9/|1/||,100",
-//            "string with two misses,--|--|--|--|--|--|--|--|--|10||,1",
-//            "string with two digits,11|22|33|44|55|12|12|12|12|10||,43",
-//            "string with digit and miss,1-|1-|1-|2-|2-|2-|3-|3-|3-|1-||,19",
-//            "string with miss and digit, -1|-1|-1|-1|-2|-3|-4|-1|-1|-2||,17"
-//    })
-//    public void shouldGiveScoreWhenAddingAllTheFrames(String senario, String expression, int expected) {
-//        assertEquals(expected, bowlingScoreProvider.getScore(expression));
-//    }
 
     @ParameterizedTest
 
@@ -75,7 +56,7 @@ public class BowlingScoreProviderTest {
     public void shouldThrowValidationErrorWhenFrameFormatIsNotCorrect(String senario, String expression, String expected) {
         AssertionError thrown = assertThrows(
                 AssertionError.class,
-                () -> bowlingScoreProvider.getScore(expression),
+                () -> expressionAndFrameValidation.getExpressionValidation(expression),
                 "Expected getScore() to throw, but it didn't"
         );
         assertEquals(expected, thrown.getMessage());
@@ -90,11 +71,28 @@ public class BowlingScoreProviderTest {
     public void shouldThrowValidationErrorWhenSumOfDigitsInFrameAreGreaterThan10(String senario, String expression, String expected) {
         AssertionError thrown = assertThrows(
                 AssertionError.class,
-                () -> bowlingScoreProvider.getScore(expression),
+                () -> expressionAndFrameValidation.getExpressionValidation(expression),
                 "Expected getScore() to throw, but it didn't"
         );
         assertEquals(expected, thrown.getMessage());
     }
+    @ParameterizedTest
+
+    @CsvSource({
+            "String with invalid bonus expression at last frame as digit, x|x|12|x|x|x|x|x|x|32||23 ,invalid bonus expression",
+            "string with invalid bonus expression at last frame as miss, 1/|2/|21|4/|5/|6/|7/|8/|9/|1-||32,invalid bonus expression",
+            "String with invalid bonus expression at last frame as spare, x|x|12|x|x|x|x|x|x|3/||23 ,invalid bonus expression",
+            "string with invalid bonus expression at last frame as strike, 1/|2/|12|4/|5/|6/|7/|8/|9/|x||3,invalid bonus expression"
+    })
+    public void shouldThrowValidationErrorWhenValidBonusIsNotGiven(String senario, String expression, String expected) {
+        AssertionError thrown = assertThrows(
+                AssertionError.class,
+                () -> expressionAndFrameValidation.getExpressionValidation(expression),
+                "Expected getScore() to throw, but it didn't"
+        );
+        assertEquals(expected, thrown.getMessage());
+    }
+
 
     @ParameterizedTest
     @CsvSource({
@@ -117,11 +115,11 @@ public class BowlingScoreProviderTest {
 
     @ParameterizedTest
     @CsvSource({
-            "String with frames as X, x|x|1/|30|x|x|x|x|30|10|| ,166",
+            "String with frames as X, x|x|1/|30|x|x|x|x|3-|1-|| ,157",
             "string with spare in a frame,1/|1/|1/|1/|1/|1/|1/|1/|1/|11||,101",
-            "string with spare in a frame,1/|10|1/|-3|1/|1/|1/|1/|1/|11||,82",
-            "string with two misses,--|--|--|--|--|--|--|--|--|10||,1",
-            "string with two digits,11|22|33|44|55|12|12|12|12|10||,43",
+            "string with spare in a frame,1/|1-|1/|-3|1/|1/|1/|1/|1/|11||,82",
+            "string with two misses,--|--|--|--|--|--|--|--|--|1-||,1",
+            "string with two digits,11|22|33|44|55|12|12|12|12|1-||,43",
             "string with digit and miss,1-|1-|1-|2-|2-|2-|3-|3-|3-|1-||,19",
             "string with miss and digit, 1-|1-|2-|32|-3|--|--|--|--|--||,12"
 
@@ -129,7 +127,18 @@ public class BowlingScoreProviderTest {
     public void shouldGiveScoreWhenAddingStrikesInFrames(String senario, String expression, int expected) {
         assertEquals(expected, bowlingScoreProvider.getScore(expression));
     }
+    @ParameterizedTest
+    @CsvSource({
+            "String with frames as X, x|x|1/|3-|x|x|x|x|3-|13|| ,160",
+            "String with frames as X, x|x|1/|3-|x|x|x|x|3-|3-|| ,159",
+            "String with frames as X, x|x|1/|3-|x|x|x|x|3-|x||xx ,186",
+            "String with frames as X, x|x|1/|3-|x|x|x|x|3-|3/||x ,176",
 
+
+    })
+    public void shouldGiveTotalScoreWhenAddingBonusToFrames(String senario, String expression, int expected) {
+        assertEquals(expected, bowlingScoreProvider.getScore(expression));
+    }
 
 }
 

@@ -1,44 +1,43 @@
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class BowlingScoreProvider {
 
 
     private static final String INVALID_FRAME_SIZE = "invalid frame size";
     private static final String INVALID_BONUS_EXPRESSION = "invalid bonus expression";
-    private static final String INVALID_DIGITS_IN_FRAME = "invalid digits in given frame:";
     private static final String BONUS_SEPARATOR = "\\|\\|";
     private static final String FRAME_SEPARATOR = "\\|";
     private static final String DIGIT_MATCHER = "^[1-9]{1}$";
 
 
     public int getScore(String expression) {
-
-        String[] splitWithDoublePipe = expression.split(BONUS_SEPARATOR);
-        assert expression.length() - expression.replaceAll(BONUS_SEPARATOR, "").length() == 2 : INVALID_BONUS_EXPRESSION;
-        String frames = splitWithDoublePipe[0];
-        List<String> framesList = Arrays.asList(frames.split(FRAME_SEPARATOR));
-
-        assert framesList.size() == 10 : INVALID_FRAME_SIZE;
-        framesList.forEach(frame->new FrameValidation().getFrameValidation(frame));
-
-        List<String> eachBallList = framesList.stream()
-                .map(this::splitAndAssignStringToList)
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
+        ExpressionAndFrameValidation expressionAndFrameValidation = new ExpressionAndFrameValidation();
+        expressionAndFrameValidation.getExpressionValidation(expression);
+        List<String> eachBallList = expressionAndFrameValidation.getEachBallList(expression);
+        List<String> eachBallInBonus = expressionAndFrameValidation.getEachBonusBallList(expression);
         int finalScore = 0;
         for (int i = 0; i < eachBallList.size(); i++) {
             //strike scenario
             if (eachBallList.get(i).equals("x")) {
-                finalScore += 10
-                        + getValueAfterNextIndex(eachBallList.get(i + 1), eachBallList)
-                        + getValueAfterNextIndex(eachBallList.get(i + 2), eachBallList);
+                if (i == eachBallList.size() - 1) {
+
+                    finalScore += 10 + getValueAfterNextIndex(eachBallInBonus.get(0), 0, eachBallInBonus)
+                            + getValueAfterNextIndex(eachBallInBonus.get(1), 1, eachBallInBonus);
+                } else if (i == eachBallList.size() - 2 && eachBallList.get(i + 1).equals("x")) {
+                    finalScore += 10 + getValueAfterNextIndex(eachBallList.get(i + 1), i + 1, eachBallList) + getValueAfterNextIndex(eachBallInBonus.get(0), 0, eachBallInBonus);
+                } else {
+                    finalScore += 10
+                            + getValueAfterNextIndex(eachBallList.get(i + 1), i + 1, eachBallList)
+                            + getValueAfterNextIndex(eachBallList.get(i + 2), i + 2, eachBallList);
+                }
             }
             //spare scenario
             else if (eachBallList.get(i).equals("/")) {
-                finalScore += 10 - Integer.parseInt(eachBallList.get(i - 1)) + getValueAfterNextIndex(eachBallList.get(i + 1), eachBallList);
+                if (i == eachBallList.size() - 1) {
+                    finalScore += 10 - Integer.parseInt(eachBallList.get(i - 1)) + getValueAfterNextIndex(eachBallInBonus.get(0), 0, eachBallInBonus);
+                } else {
+                    finalScore += 10 - Integer.parseInt(eachBallList.get(i - 1)) + getValueAfterNextIndex(eachBallList.get(i + 1), i + 1, eachBallList);
+                }
             }
             //digit scenario
             else if (eachBallList.get(i).matches(DIGIT_MATCHER)) {
@@ -52,12 +51,7 @@ public class BowlingScoreProvider {
         return finalScore;
     }
 
-    private List<String> splitAndAssignStringToList(String frame) {
-        String[] SplittedStringArray = frame.split("");
-        return Arrays.asList(SplittedStringArray.clone());
-    }
-
-    private int getValueAfterNextIndex(String eachBall, List<String> eachBallList) {
+    private int getValueAfterNextIndex(String eachBall, int index, List<String> eachBallList) {
         int valueAAfterNextIndex = 0;
         for (int i = 0; i < eachBallList.size(); i++) {
             if (eachBall.equals("x")) {
@@ -67,7 +61,7 @@ public class BowlingScoreProvider {
             } else if (eachBall.matches(DIGIT_MATCHER)) {
                 valueAAfterNextIndex = Integer.parseInt(eachBall);
             } else if (eachBallList.get(i).equals("/")) {
-                valueAAfterNextIndex = 10 - Integer.parseInt(eachBallList.get(i - 1));
+                valueAAfterNextIndex = 10 - Integer.parseInt(eachBallList.get(index - 1));
             }
 
         }
