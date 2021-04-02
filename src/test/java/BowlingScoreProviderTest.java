@@ -13,7 +13,7 @@ public class BowlingScoreProviderTest {
     public void shouldThrowValidationErrorWhenBonusSeparatorIsNotGiven(String expression) {
         AssertionError thrown = assertThrows(
                 AssertionError.class,
-                () -> expressionAndFrameValidation.getExpressionValidation(expression),
+                () -> expressionAndFrameValidation.validateExpression(expression),
                 "Expected getScore() to throw, but it didn't"
         );
         assertTrue(thrown.getMessage().contains("invalid bonus size"));
@@ -25,7 +25,7 @@ public class BowlingScoreProviderTest {
     public void shouldThrowValidationErrorWhenMoreThanOneBonusSeparatorIsGiven(String expression) {
         AssertionError thrown = assertThrows(
                 AssertionError.class,
-                () -> expressionAndFrameValidation.getExpressionValidation(expression),
+                () -> expressionAndFrameValidation.validateExpression(expression),
                 "Expected getScore() to throw, but it didn't"
         );
         assertTrue(thrown.getMessage().contains("invalid bonus size"));
@@ -40,7 +40,7 @@ public class BowlingScoreProviderTest {
     public void shouldThrowValidationErrorWhenFramesAreNot10(String senario, String expression, String expected) {
         AssertionError thrown = assertThrows(
                 AssertionError.class,
-                () -> expressionAndFrameValidation.getExpressionValidation(expression),
+                () -> expressionAndFrameValidation.validateExpression(expression),
                 "Expected getScore() to throw, but it didn't"
         );
 
@@ -56,7 +56,7 @@ public class BowlingScoreProviderTest {
     public void shouldThrowValidationErrorWhenFrameFormatIsNotCorrect(String senario, String expression, String expected) {
         AssertionError thrown = assertThrows(
                 AssertionError.class,
-                () -> expressionAndFrameValidation.getExpressionValidation(expression),
+                () -> expressionAndFrameValidation.validateExpression(expression),
                 "Expected getScore() to throw, but it didn't"
         );
         assertEquals(expected, thrown.getMessage());
@@ -71,7 +71,7 @@ public class BowlingScoreProviderTest {
     public void shouldThrowValidationErrorWhenSumOfDigitsInFrameAreGreaterThan10(String senario, String expression, String expected) {
         AssertionError thrown = assertThrows(
                 AssertionError.class,
-                () -> expressionAndFrameValidation.getExpressionValidation(expression),
+                () -> expressionAndFrameValidation.validateExpression(expression),
                 "Expected getScore() to throw, but it didn't"
         );
         assertEquals(expected, thrown.getMessage());
@@ -87,7 +87,7 @@ public class BowlingScoreProviderTest {
     public void shouldThrowValidationErrorWhenValidBonusIsNotGiven(String senario, String expression, String expected) {
         AssertionError thrown = assertThrows(
                 AssertionError.class,
-                () -> expressionAndFrameValidation.getExpressionValidation(expression),
+                () -> expressionAndFrameValidation.validateExpression(expression),
                 "Expected getScore() to throw, but it didn't"
         );
         assertEquals(expected, thrown.getMessage());

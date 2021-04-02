@@ -2,71 +2,86 @@ import java.util.List;
 
 public class BowlingScoreProvider {
 
-
-    private static final String INVALID_FRAME_SIZE = "invalid frame size";
-    private static final String INVALID_BONUS_EXPRESSION = "invalid bonus expression";
-    private static final String BONUS_SEPARATOR = "\\|\\|";
-    private static final String FRAME_SEPARATOR = "\\|";
     private static final String DIGIT_MATCHER = "^[1-9]{1}$";
-
+    public static final int FRAME_MAX_POINTS = 10;
 
     public int getScore(String expression) {
         ExpressionAndFrameValidation expressionAndFrameValidation = new ExpressionAndFrameValidation();
-        expressionAndFrameValidation.getExpressionValidation(expression);
-        List<String> eachBallList = expressionAndFrameValidation.getEachBallList(expression);
-        List<String> eachBallInBonus = expressionAndFrameValidation.getEachBonusBallList(expression);
+        expressionAndFrameValidation.validateExpression(expression);
+        Game game = new Game();
+        List<String> eachBallList = game.getBalls(expression);
+        List<String> eachBallInBonus = game.getBonusBalls(expression);
         int finalScore = 0;
-        for (int i = 0; i < eachBallList.size(); i++) {
-            //strike scenario
-            if (eachBallList.get(i).equals("x")) {
-                if (i == eachBallList.size() - 1) {
-
-                    finalScore += 10 + getValueAfterNextIndex(eachBallInBonus.get(0), 0, eachBallInBonus)
-                            + getValueAfterNextIndex(eachBallInBonus.get(1), 1, eachBallInBonus);
-                } else if (i == eachBallList.size() - 2 && eachBallList.get(i + 1).equals("x")) {
-                    finalScore += 10 + getValueAfterNextIndex(eachBallList.get(i + 1), i + 1, eachBallList) + getValueAfterNextIndex(eachBallInBonus.get(0), 0, eachBallInBonus);
-                } else {
-                    finalScore += 10
-                            + getValueAfterNextIndex(eachBallList.get(i + 1), i + 1, eachBallList)
-                            + getValueAfterNextIndex(eachBallList.get(i + 2), i + 2, eachBallList);
-                }
-            }
-            //spare scenario
-            else if (eachBallList.get(i).equals("/")) {
-                if (i == eachBallList.size() - 1) {
-                    finalScore += 10 - Integer.parseInt(eachBallList.get(i - 1)) + getValueAfterNextIndex(eachBallInBonus.get(0), 0, eachBallInBonus);
-                } else {
-                    finalScore += 10 - Integer.parseInt(eachBallList.get(i - 1)) + getValueAfterNextIndex(eachBallList.get(i + 1), i + 1, eachBallList);
-                }
-            }
-            //digit scenario
-            else if (eachBallList.get(i).matches(DIGIT_MATCHER)) {
-                finalScore += Integer.parseInt(eachBallList.get(i));
-            }
-            //miss scenario
-            else if (eachBallList.get(i).equals("-")) {
+        for (int ballIndex = 0; ballIndex < eachBallList.size(); ballIndex++) {
+            if (BallType.STRIKE.getBallType().equals(eachBallList.get(ballIndex))) {//strike scenario
+                finalScore += getStrikeFinalScore(eachBallList, eachBallInBonus, ballIndex);
+            } else if (BallType.SPARE.getBallType().equals(eachBallList.get(ballIndex))) {//spare scenario
+                finalScore += getSpareFinalScore(eachBallList, eachBallInBonus, ballIndex);
+            } else if (eachBallList.get(ballIndex).matches(DIGIT_MATCHER)) {//digit scenario
+                finalScore += Integer.parseInt(eachBallList.get(ballIndex));
+            } else if (BallType.MISS.getBallType().equals(eachBallList.get(ballIndex))) {//miss scenario
                 finalScore += 0;
             }
         }
         return finalScore;
     }
 
-    private int getValueAfterNextIndex(String eachBall, int index, List<String> eachBallList) {
-        int valueAAfterNextIndex = 0;
-        for (int i = 0; i < eachBallList.size(); i++) {
-            if (eachBall.equals("x")) {
-                valueAAfterNextIndex = 10;
-            } else if (eachBall.equals("-")) {
-                valueAAfterNextIndex = 0;
-            } else if (eachBall.matches(DIGIT_MATCHER)) {
-                valueAAfterNextIndex = Integer.parseInt(eachBall);
-            } else if (eachBallList.get(i).equals("/")) {
-                valueAAfterNextIndex = 10 - Integer.parseInt(eachBallList.get(index - 1));
-            }
+    private int getSpareFinalScore(List<String> eachBallList, List<String> eachBallInBonus, int ballIndex) {
+        int nextBallIndex;
+        List<String> ballsList;
+        if (ballIndex == eachBallList.size() - 1) {
 
+            nextBallIndex = 0;
+            ballsList = eachBallInBonus;
+        } else {
+
+            nextBallIndex = ballIndex + 1;
+            ballsList = eachBallList;
         }
-        return valueAAfterNextIndex;
+        return FRAME_MAX_POINTS - Integer.parseInt(eachBallList.get(ballIndex - 1)) + getValueAfterNextIndex(nextBallIndex, ballsList);
     }
 
+    private int getStrikeFinalScore(List<String> eachBallList, List<String> eachBallInBonus, int ballIndex) {
+        int nextBallIndex;
+        List<String> nextBallList;
+
+        int secondNextBallIndex;
+        List<String> secondNextBallList;
+
+        if (ballIndex == eachBallList.size() - 1) {
+            nextBallIndex = 0;
+            nextBallList = eachBallInBonus;
+            secondNextBallIndex = 1;
+            secondNextBallList = eachBallInBonus;
+        } else if (ballIndex == eachBallList.size() - 2 && BallType.STRIKE.getBallType().equalsIgnoreCase(eachBallList.get(ballIndex + 1))) {
+            nextBallIndex = ballIndex + 1;
+            nextBallList = eachBallList;
+            secondNextBallIndex = 0;
+            secondNextBallList = eachBallInBonus;
+        } else {
+            nextBallIndex = ballIndex + 1;
+            nextBallList = eachBallList;
+            secondNextBallIndex = ballIndex + 2;
+            secondNextBallList = eachBallList;
+        }
+        return FRAME_MAX_POINTS + getValueAfterNextIndex(nextBallIndex, nextBallList)
+                + getValueAfterNextIndex(secondNextBallIndex, secondNextBallList);
+    }
+
+    private int getValueAfterNextIndex(int ballIndex, List<String> ballsList) {
+        String ball = ballsList.get(ballIndex);
+        int valueAfterNextIndex = 0;
+        if (BallType.STRIKE.getBallType().equals(ball)) {
+            valueAfterNextIndex = FRAME_MAX_POINTS;
+        } else if (BallType.MISS.getBallType().equals(ball)) {
+            valueAfterNextIndex = 0;
+        } else if (ball.matches(DIGIT_MATCHER)) {
+            valueAfterNextIndex = Integer.parseInt(ball);
+        } else if (BallType.SPARE.getBallType().equals(ball)) {
+            valueAfterNextIndex = FRAME_MAX_POINTS - Integer.parseInt(ballsList.get(ballIndex - 1));
+        }
+
+        return valueAfterNextIndex;
+    }
 
 }
