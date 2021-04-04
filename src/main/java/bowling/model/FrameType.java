@@ -1,3 +1,5 @@
+package bowling.model;
+
 import java.util.Arrays;
 
 public enum FrameType {
