@@ -11,7 +11,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -21,10 +24,14 @@ public class AccountServiceImplTest {
 
     @Mock
     private TransactionRepository mockTransactionRepository;
+    @Mock
+    private StatementPrinter mockStatementPrinter;
+    @Mock
+    private TransactionDate mockTransactionDate;
 
     @BeforeEach
     public void init() {
-        subject = new AccountServiceImpl(mockTransactionRepository);
+        subject = new AccountServiceImpl(mockTransactionRepository, mockStatementPrinter,mockTransactionDate);
     }
 
 
@@ -45,12 +52,12 @@ public class AccountServiceImplTest {
     }
 
 
-//    @Test
-//    public void shouldBeAbleToPrintTransactions() {
-//        subject.deposit(new BigDecimal(200));
-//        subject.withdraw(new BigDecimal(-100));
-//        subject.withdraw(new BigDecimal(-10));
-//        subject.deposit(new BigDecimal(200));
-//        subject.printStatement();
-//    }
+    @Test
+    public void shouldBeAbleToPrintTransactions() {
+        List<Transaction> transactions= new ArrayList<>();
+        given(mockTransactionRepository.getTransactions()).willReturn(transactions);
+        subject.printStatement();
+        verify(mockStatementPrinter).printStatement(transactions);
+
+    }
 }

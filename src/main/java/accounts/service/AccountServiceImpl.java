@@ -9,9 +9,13 @@ import java.time.LocalDate;
 
 public class AccountServiceImpl implements AccountService {
     private final TransactionRepository transactionRepository;
+    private final StatementPrinter statementPrinter;
+    private TransactionDate transactionDate;
 
-    public AccountServiceImpl(TransactionRepository transactionRepository) {
+    public AccountServiceImpl(TransactionRepository transactionRepository, StatementPrinter statementPrinter, TransactionDate transactionDate) {
         this.transactionRepository = transactionRepository;
+        this.statementPrinter = statementPrinter;
+        this.transactionDate = transactionDate;
     }
 
     @Override
@@ -27,17 +31,12 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public void printStatement() {// string buffer-string builder
-        System.out.println("DATE       || AMOUNT || BALANCE");
-        BigDecimal balance = new BigDecimal(0);
-        for (Transaction transaction : transactionRepository.getTransactions()) {
-            balance = balance.add(transaction.getAmount());
-            System.out.println(transaction.getDate() + " || " + transaction.getAmount() + "    || " + balance);
-        }
+    public void printStatement() {
+        statementPrinter.printStatement(transactionRepository.getTransactions());
     }
 
     private Transaction getTransaction(BigDecimal amount) {
-        return new Transaction(LocalDate.now(), amount, amount.intValue() >= 0 ? Direction.IN : Direction.OUT);
+        return new Transaction(transactionDate.getDate(), amount, amount.intValue() >= 0 ? Direction.IN : Direction.OUT);
     }
 
 }
